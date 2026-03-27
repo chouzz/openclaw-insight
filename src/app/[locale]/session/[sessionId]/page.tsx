@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 interface TokenUsage {
   totalInput: number;
@@ -37,12 +38,13 @@ interface SessionDetail {
   endTime?: string;
   events: LogEvent[];
   eventTree: LogEvent[];
+  eventCount?: number;
   toolCalls: ToolCallSummary[];
   tokenUsage: TokenUsage;
   fileName: string;
 }
 
-// 将事件树扁平化为时间线
+// Flatten event tree to timeline
 function flattenEvents(events: LogEvent[]): LogEvent[] {
   const result: LogEvent[] = [];
 
@@ -57,8 +59,8 @@ function flattenEvents(events: LogEvent[]): LogEvent[] {
   return result.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 }
 
-// 渲染消息内容
-function renderMessageContent(content: any[], onToolCall?: (toolCall: any) => void): JSX.Element[] {
+// Render message content
+function renderMessageContent(content: any[], t: ReturnType<typeof useTranslations>): (React.JSX.Element | null)[] {
   return content.map((item: any, index: number) => {
     if (item.type === 'text') {
       return (
@@ -70,16 +72,12 @@ function renderMessageContent(content: any[], onToolCall?: (toolCall: any) => vo
     if (item.type === 'thinking') {
       return (
         <div key={index} className="bg-gray-900/50 rounded-lg p-3 mb-2 border-l-2 border-purple-500">
-          <div className="text-xs text-purple-400 mb-1">💭 思考过程</div>
+          <div className="text-xs text-purple-400 mb-1">💭 {t('session.systemMessages.thinkingProcess')}</div>
           <div className="text-xs text-gray-400 whitespace-pre-wrap">{item.thinking}</div>
         </div>
       );
     }
     if (item.type === 'toolCall') {
-      // 回调通知父组件有工具调用
-      if (onToolCall) {
-        onToolCall(item);
-      }
       return (
         <div key={index} className="mt-3 mb-2">
           <div className="bg-green-900/20 rounded-lg border border-green-800/50 overflow-hidden">
@@ -92,7 +90,7 @@ function renderMessageContent(content: any[], onToolCall?: (toolCall: any) => vo
               </div>
             </div>
             <div className="p-2">
-              <div className="text-xs text-gray-400 mb-1">参数:</div>
+              <div className="text-xs text-gray-400 mb-1">{t('session.parameters')}:</div>
               <pre className="text-xs text-gray-300 bg-gray-900 rounded p-2 overflow-x-auto">
                 {JSON.stringify(item.arguments, null, 2)}
               </pre>
@@ -119,7 +117,7 @@ function renderMessageContent(content: any[], onToolCall?: (toolCall: any) => vo
                 <div className={`font-medium text-sm ${
                   item.isError ? 'text-red-400' : 'text-yellow-400'
                 }`}>
-                  {item.toolName || '工具结果'}
+                  {item.toolName || t('session.toolResult')}
                 </div>
               </div>
             </div>
@@ -140,7 +138,8 @@ function renderMessageContent(content: any[], onToolCall?: (toolCall: any) => vo
   });
 }
 
-export default function SessionDetail({ params }: { params: Promise<{ sessionId: string }> }) {
+export default function SessionDetail({ params }: { params: Promise<{ sessionId: string; locale: string }> }) {
+  const t = useTranslations('session');
   const [session, setSession] = useState<SessionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -172,7 +171,7 @@ export default function SessionDetail({ params }: { params: Promise<{ sessionId:
       <div className="min-h-screen bg-gray-900 text-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p>加载会话详情中...</p>
+          <p>{t('loading')}</p>
         </div>
       </div>
     );
@@ -181,21 +180,21 @@ export default function SessionDetail({ params }: { params: Promise<{ sessionId:
   if (!session) {
     return (
       <div className="min-h-screen bg-gray-900 text-gray-100 flex items-center justify-center">
-        <div>会话不存在</div>
+        <div>{t('notFound')}</div>
       </div>
     );
   }
 
   const timeline = flattenEvents(session.eventTree || []);
 
-  // 收集所有系统消息并在一行显示
+  // Collect all system messages and display in one line
   const systemMessages = timeline.filter(e =>
     e.type === 'session' || e.type === 'model_change' || e.type === 'thinking_level_change' || e.type === 'custom'
   );
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
-      {/* 顶部导航 */}
+      {/* Top Navigation */}
       <div className="bg-gray-900 border-b border-gray-800 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -203,16 +202,16 @@ export default function SessionDetail({ params }: { params: Promise<{ sessionId:
               href="/"
               className="inline-flex items-center text-blue-400 hover:text-blue-300 text-sm"
             >
-              ← 返回会话列表
+              ← {t('backToHome')}
             </Link>
             <div className="text-sm text-gray-400">
-              {new Date(session.startTime).toLocaleString('zh-CN')}
+              {new Date(session.startTime).toLocaleString()}
             </div>
           </div>
         </div>
       </div>
 
-      {/* 统计信息 */}
+      {/* Statistics */}
       <div className="bg-gray-900/50 border-b border-gray-800">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
@@ -222,33 +221,33 @@ export default function SessionDetail({ params }: { params: Promise<{ sessionId:
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-gray-800/50 rounded-lg px-3 py-2">
               <div className="text-lg font-bold text-blue-400">{session.eventCount || 0}</div>
-              <div className="text-xs text-gray-500">事件总数</div>
+              <div className="text-xs text-gray-500">{t('stats.totalEvents')}</div>
             </div>
             <div className="bg-gray-800/50 rounded-lg px-3 py-2">
               <div className="text-lg font-bold text-green-400">
                 {session.tokenUsage?.totalTokens?.toLocaleString() || '0'}
               </div>
-              <div className="text-xs text-gray-500">总 Token</div>
+              <div className="text-xs text-gray-500">{t('stats.totalTokens')}</div>
             </div>
             <div className="bg-gray-800/50 rounded-lg px-3 py-2">
               <div className="text-lg font-bold text-yellow-400">
                 ${session.tokenUsage?.totalCost?.toFixed(4) || '0.0000'}
               </div>
-              <div className="text-xs text-gray-500">花费</div>
+              <div className="text-xs text-gray-500">{t('stats.cost')}</div>
             </div>
             <div className="bg-gray-800/50 rounded-lg px-3 py-2">
               <div className="text-lg font-bold text-purple-400">
                 {session.toolCalls?.reduce((sum, t) => sum + (t.count || 0), 0) || 0}
               </div>
-              <div className="text-xs text-gray-500">工具调用</div>
+              <div className="text-xs text-gray-500">{t('stats.toolCalls')}</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 对话内容 */}
+      {/* Conversation Content */}
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* 系统消息栏 */}
+        {/* System Messages Bar */}
         {systemMessages.length > 0 && (
           <div className="mb-6 flex justify-center">
             <div className="flex flex-wrap items-center gap-2 bg-gray-800/30 rounded-lg px-4 py-2 border border-gray-800">
@@ -256,7 +255,7 @@ export default function SessionDetail({ params }: { params: Promise<{ sessionId:
                 <div key={event.id} className="flex items-center">
                   {idx > 0 && <div className="w-px h-3 bg-gray-700 mx-2"></div>}
                   <span className="text-xs text-gray-500">
-                    {event.type === 'session' && '🚀 会话开始'}
+                    {event.type === 'session' && '🚀 ' + t('sessionStart')}
                     {event.type === 'model_change' && `🤖 ${event.provider}/${event.modelId}`}
                     {event.type === 'thinking_level_change' && `🧠 ${event.thinkingLevel}`}
                     {event.type === 'custom' && `📋 ${event.customType}`}
@@ -269,12 +268,12 @@ export default function SessionDetail({ params }: { params: Promise<{ sessionId:
 
         <div className="space-y-6">
           {timeline.map((event, index) => {
-            // 跳过系统消息（已经在上面的栏中显示）
+            // Skip system messages (already displayed in the bar above)
             if (event.type === 'session' || event.type === 'model_change' || event.type === 'thinking_level_change' || event.type === 'custom') {
               return null;
             }
 
-            // 用户消息
+            // User message
             if (event.type === 'message' && event.message?.role === 'user') {
               return (
                 <div key={event.id} className="flex justify-end">
@@ -285,20 +284,20 @@ export default function SessionDetail({ params }: { params: Promise<{ sessionId:
                           👤
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs text-blue-200 mb-1 font-medium">用户</div>
-                          {renderMessageContent(event.message.content || [])}
+                          <div className="text-xs text-blue-200 mb-1 font-medium">{t('roles.user')}</div>
+                          {renderMessageContent(event.message.content || [], t)}
                         </div>
                       </div>
                     </div>
                     <div className="text-xs text-gray-500 mt-1 text-right">
-                      {new Date(event.timestamp).toLocaleTimeString('zh-CN')}
+                      {new Date(event.timestamp).toLocaleTimeString()}
                     </div>
                   </div>
                 </div>
               );
             }
 
-            // 助手/系统消息
+            // Assistant/System message
             if (event.type === 'message' && (event.message?.role === 'assistant' || event.message?.role === 'system')) {
               const isSystem = event.message?.role === 'system';
               return (
@@ -313,15 +312,15 @@ export default function SessionDetail({ params }: { params: Promise<{ sessionId:
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs text-gray-400 mb-1 font-medium">
-                            {isSystem ? '系统' : 'AI 助手'}
+                            {isSystem ? t('roles.system') : t('roles.assistant')}
                           </div>
-                          {renderMessageContent(event.message.content || [])}
+                          {renderMessageContent(event.message.content || [], t)}
                           {event.message.usage && (
                             <div className="mt-3 pt-2 border-t border-gray-600/50">
                               <div className="text-xs text-gray-400">
                                 📊 {event.message.usage.input.toLocaleString()} in +
                                 {event.message.usage.output.toLocaleString()} out =
-                                {event.message.usage.totalTokens.toLocaleString()} tokens
+                                {event.message.usage.totalTokens.toLocaleString()} {t('tokenUsage')}
                               </div>
                             </div>
                           )}
@@ -329,26 +328,22 @@ export default function SessionDetail({ params }: { params: Promise<{ sessionId:
                       </div>
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {new Date(event.timestamp).toLocaleTimeString('zh-CN')}
+                      {new Date(event.timestamp).toLocaleTimeString()}
                     </div>
                   </div>
                 </div>
               );
             }
 
-            // 注释：工具调用和结果已经嵌入在消息内容中处理，不需要单独渲染
-            // if (event.type === 'tool') { ... }
-            // if (event.type === 'tool_result') { ... }
-
             return null;
           })}
         </div>
 
-        {/* 结束标记 */}
+        {/* End Marker */}
         {session.endTime && (
           <div className="flex justify-center mt-8">
             <div className="bg-gray-800/30 rounded-lg px-4 py-2 text-xs text-gray-500 border border-gray-800">
-              🏁 会话结束 · {new Date(session.endTime).toLocaleString('zh-CN')}
+              🏁 {t('sessionEnd')} · {new Date(session.endTime).toLocaleString()}
             </div>
           </div>
         )}

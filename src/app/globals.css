@@ -5,7 +5,7 @@ body {
   color: rgb(229 231 235);
 }
 
-/* 自定义滚动条 */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "title": "OpenClaw 日志分析器",
+    "description": "系统化分析 OpenClaw 模型行为、工具调用和 token 使用"
+  },
+  "home": {
+    "title": "OpenClaw 日志分析器",
+    "subtitle": "系统化分析模型行为、工具调用和 token 使用",
+    "loading": "加载日志中...",
+    "stats": {
+      "totalSessions": "会话总数",
+      "totalEvents": "事件总数",
+      "totalTokens": "总 Token 数",
+      "totalCost": "总花费",
+      "totalToolCalls": "工具调用次数"
+    },
+    "filters": {
+      "search": "搜索",
+      "searchPlaceholder": "搜索会话 ID 或文件名...",
+      "toolFilter": "工具筛选",
+      "allTools": "所有工具"
+    },
+    "table": {
+      "sessionId": "会话 ID",
+      "startTime": "开始时间",
+      "tokens": "Token",
+      "cost": "花费",
+      "toolCalls": "工具调用",
+      "actions": "操作",
+      "viewDetails": "查看详情"
+    },
+    "empty": "没有找到匹配的会话"
+  },
+  "session": {
+    "loading": "加载会话详情中...",
+    "notFound": "会话不存在",
+    "backToHome": "返回会话列表",
+    "stats": {
+      "totalEvents": "事件总数",
+      "totalTokens": "总 Token",
+      "cost": "花费",
+      "toolCalls": "工具调用"
+    },
+    "systemMessages": {
+      "sessionStart": "会话开始",
+      "thinkingProcess": "思考过程"
+    },
+    "roles": {
+      "user": "用户",
+      "assistant": "AI 助手",
+      "system": "系统"
+    },
+    "toolResult": "工具结果",
+    "parameters": "参数",
+    "sessionEnd": "会话结束",
+    "tokenUsage": "tokens"
+  },
+  "common": {
+    "success": "成功",
+    "failed": "失败"
+  }
+}

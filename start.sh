@@ -1,16 +1,16 @@
 #!/bin/bash
 
-echo "启动 OpenClaw 日志分析器..."
+echo "Starting OpenClaw Insight..."
 echo ""
 
-# 检查依赖
+# Check dependencies
 if [ ! -d "node_modules" ]; then
-    echo "正在安装依赖..."
+    echo "Installing dependencies..."
     pnpm install
 fi
 
-echo "启动开发服务器..."
-echo "访问地址: http://localhost:3000"
+echo "Starting development server..."
+echo "Access URL: http://localhost:3000"
 echo ""
 
 pnpm dev

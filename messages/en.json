@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "title": "OpenClaw Insight",
+    "description": "Systematically analyze OpenClaw model behavior, tool calls, and token usage"
+  },
+  "home": {
+    "title": "OpenClaw Insight",
+    "subtitle": "Systematically analyze model behavior, tool calls, and token usage",
+    "loading": "Loading logs...",
+    "stats": {
+      "totalSessions": "Total Sessions",
+      "totalEvents": "Total Events",
+      "totalTokens": "Total Tokens",
+      "totalCost": "Total Cost",
+      "totalToolCalls": "Tool Calls"
+    },
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Search session ID or filename...",
+      "toolFilter": "Tool Filter",
+      "allTools": "All Tools"
+    },
+    "table": {
+      "sessionId": "Session ID",
+      "startTime": "Start Time",
+      "tokens": "Tokens",
+      "cost": "Cost",
+      "toolCalls": "Tool Calls",
+      "actions": "Actions",
+      "viewDetails": "View Details"
+    },
+    "empty": "No matching sessions found"
+  },
+  "session": {
+    "loading": "Loading session details...",
+    "notFound": "Session not found",
+    "backToHome": "Back to Session List",
+    "stats": {
+      "totalEvents": "Total Events",
+      "totalTokens": "Total Tokens",
+      "cost": "Cost",
+      "toolCalls": "Tool Calls"
+    },
+    "systemMessages": {
+      "sessionStart": "Session Start",
+      "thinkingProcess": "Thinking Process"
+    },
+    "roles": {
+      "user": "User",
+      "assistant": "AI Assistant",
+      "system": "System"
+    },
+    "toolResult": "Tool Result",
+    "parameters": "Parameters",
+    "sessionEnd": "Session End",
+    "tokenUsage": "tokens"
+  },
+  "common": {
+    "success": "Success",
+    "failed": "Failed"
+  }
+}

@@ -4,7 +4,7 @@ import { LogEvent, SessionLog, ToolCallSummary } from '@/types/log';
 
 const LOGS_DIR = '/Users/zhouhua/.openclaw/agents/main/sessions';
 
-// 读取并解析单个日志文件
+// Read and parse a single log file
 export async function parseLogFile(fileName: string): Promise<SessionLog | null> {
   try {
     const filePath = path.join(LOGS_DIR, fileName);
@@ -12,8 +12,8 @@ export async function parseLogFile(fileName: string): Promise<SessionLog | null>
     const lines = content.trim().split('\n');
     const events: LogEvent[] = [];
 
-    // 从文件名提取 sessionId
-    // 支持格式: xxx.jsonl 或 xxx.jsonl.reset.timestamp 等
+    // Extract sessionId from filename
+    // Supports formats: xxx.jsonl or xxx.jsonl.reset.timestamp etc.
     const sessionIdMatch = fileName.match(/^([a-f0-9-]+)\.jsonl/);
     const sessionId = sessionIdMatch ? sessionIdMatch[1] : path.basename(fileName, '.jsonl');
 
@@ -45,14 +45,14 @@ export async function parseLogFile(fileName: string): Promise<SessionLog | null>
   }
 }
 
-// 获取所有日志文件
+// Get all log files
 export async function getAllLogFiles(): Promise<string[]> {
   try {
     const files = fs.readdirSync(LOGS_DIR);
     return files
       .filter((f) => f.includes('.jsonl') && !f.includes('.lock'))
       .sort((a, b) => {
-        // 按修改时间排序
+        // Sort by modification time
         const statA = fs.statSync(path.join(LOGS_DIR, a));
         const statB = fs.statSync(path.join(LOGS_DIR, b));
         return statB.mtime.getTime() - statA.mtime.getTime();
@@ -63,7 +63,7 @@ export async function getAllLogFiles(): Promise<string[]> {
   }
 }
 
-// 解析所有日志文件
+// Parse all log files
 export async function parseAllLogs(): Promise<SessionLog[]> {
   const files = await getAllLogFiles();
   const logs: SessionLog[] = [];
@@ -78,12 +78,12 @@ export async function parseAllLogs(): Promise<SessionLog[]> {
   return logs;
 }
 
-// 从事件中提取工具调用信息
+// Extract tool call information from events
 export function extractToolCalls(events: LogEvent[]): ToolCallSummary[] {
   const toolMap = new Map<string, { count: number; success: number; fail: number }>();
 
   for (const event of events) {
-    if (event.type === 'tool') {
+    if (event.type === 'tool' && 'tool' in event) {
       const toolName = event.tool.name;
       const current = toolMap.get(toolName) || { count: 0, success: 0, fail: 0 };
       current.count++;
@@ -92,9 +92,9 @@ export function extractToolCalls(events: LogEvent[]): ToolCallSummary[] {
 
     if (event.type === 'tool_result') {
       const toolCallId = event.toolResult.toolCallId;
-      // 查找对应的 tool 事件获取工具名
+      // Find corresponding tool event to get tool name
       const toolEvent = events.find((e) => e.type === 'tool' && e.id === toolCallId);
-      if (toolEvent) {
+      if (toolEvent && 'tool' in toolEvent) {
         const toolName = toolEvent.tool.name;
         const current = toolMap.get(toolName) || { count: 0, success: 0, fail: 0 };
         if (event.toolResult.error) {
@@ -115,7 +115,7 @@ export function extractToolCalls(events: LogEvent[]): ToolCallSummary[] {
   }));
 }
 
-// 计算 token 使用统计
+// Calculate token usage statistics
 export function calculateTokenUsage(events: LogEvent[]) {
   let totalInput = 0;
   let totalOutput = 0;
@@ -146,17 +146,17 @@ export function calculateTokenUsage(events: LogEvent[]) {
   };
 }
 
-// 构建事件树（父子关系）
+// Build event tree (parent-child relationships)
 export function buildEventTree(events: LogEvent[]) {
   const eventMap = new Map<string, LogEvent & { children: LogEvent[] }>();
   const rootEvents: (LogEvent & { children: LogEvent[] })[] = [];
 
-  // 第一遍：创建所有节点
+  // First pass: create all nodes
   for (const event of events) {
     eventMap.set(event.id, { ...event, children: [] });
   }
 
-  // 第二遍：建立父子关系
+  // Second pass: establish parent-child relationships
   for (const event of events) {
     const node = eventMap.get(event.id)!;
     if (event.parentId != null && eventMap.has(event.parentId)) {

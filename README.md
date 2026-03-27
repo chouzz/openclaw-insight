@@ -1,98 +1,155 @@
-# OpenClaw 日志分析器
+# OpenClaw Insight
 
-一个用于分析和可视化 OpenClaw 日志的 Web 应用。
+A web application for analyzing and visualizing OpenClaw logs.
 
-## 功能
+## Features
 
-- 📊 **会话列表**：查看所有 OpenClaw 会话及其统计信息
-- 🔍 **事件时间线**：可视化查看每个会话的事件流程
-- 🛠️ **工具调用分析**：统计和分析工具调用情况
-- 💰 **Token 使用统计**：追踪 token 消耗和成本
-- 🔎 **搜索和筛选**：按会话 ID、工具类型等条件过滤
+- **Session List**: View all OpenClaw sessions with their statistics
+- **Event Timeline**: Visualize the event flow for each session
+- **Tool Call Analysis**: Statistics and analysis of tool calls
+- **Token Usage Tracking**: Track token consumption and costs
+- **Search and Filter**: Filter by session ID, tool type, and more
+- **Internationalization (i18n)**: Auto-detects system language and supports English and Chinese
 
-## 技术栈
+## Tech Stack
 
 - Next.js 15 (App Router)
 - TypeScript
 - Tailwind CSS
 - pnpm
+- next-intl for internationalization
 
-## 快速开始
+## Quick Start
 
-### 安装依赖
+### Install Dependencies
 
 ```bash
-cd /Users/zhouhua/Desktop/openclaw-logs
 pnpm install
 ```
 
-### 启动开发服务器
+### Start Development Server
 
 ```bash
 pnpm dev
 ```
 
-访问 http://localhost:3000
+Visit http://localhost:3000
 
-### 构建生产版本
+The application will automatically detect your system language and display in English or Chinese accordingly.
+
+### Build for Production
 
 ```bash
 pnpm build
 pnpm start
 ```
 
-## 日志位置
+## Log Location
 
-应用默认读取日志目录：
+The application reads logs from the directory:
 ```
 /Users/zhouhua/.openclaw/agents/main/sessions
 ```
 
-如需修改日志目录，编辑 `src/lib/logParser.ts` 中的 `LOGS_DIR` 常量。
+To change the log directory, edit the `LOGS_DIR` constant in `src/lib/logParser.ts`.
 
-## 项目结构
+## Project Structure
 
 ```
 src/
 ├── app/
+│   ├── [locale]/                    # Localized routes
+│   │   ├── session/
+│   │   │   └── [sessionId]/
+│   │   │       └── page.tsx         # Session detail page
+│   │   ├── page.tsx                 # Home page
+│   │   └── layout.tsx               # Locale layout with i18n provider
 │   ├── api/
 │   │   └── logs/
-│   │       ├── route.ts              # 获取所有会话列表
-│   │       └── [sessionId]/route.ts   # 获取单个会话详情
-│   ├── session/
-│   │   └── [sessionId]/
-│   │       └── page.tsx              # 会话详情页面
-│   ├── globals.css                   # 全局样式
-│   ├── layout.tsx                    # 根布局
-│   └── page.tsx                      # 主页
+│   │       ├── route.ts             # Get all sessions API
+│   │       └── [sessionId]/
+│   │           └── route.ts         # Get single session API
+│   ├── globals.css                  # Global styles
+│   └── layout.tsx                   # Root layout
 ├── lib/
-│   └── logParser.ts                  # 日志解析工具
+│   └── logParser.ts                 # Log parsing utilities
 └── types/
-    └── log.ts                        # 类型定义
+    └── log.ts                       # TypeScript type definitions
 ```
 
-## 数据可视化
+## Internationalization
 
-### 主页
+The application uses `next-intl` for internationalization with the following features:
 
-- 显示所有会话的概览
-- 总体统计：会话数、事件数、Token 数、花费、工具调用次数
-- 搜索和筛选功能
-- 会话列表，显示每个会话的关键信息
+- **Auto-detection**: Automatically detects browser/system language
+- **Supported locales**: English (en) and Chinese (zh-CN)
+- **Default locale**: English
+- **URL structure**: Routes are prefixed with locale (e.g., `/en/`, `/zh-CN/`)
 
-### 会话详情页
+### Adding a New Language
 
-- 会话信息和统计数据
-- 工具调用统计（成功/失败次数）
-- 事件时间线（支持筛选显示不同类型的事件）
-  - 消息（用户/助手/系统）
-  - 工具调用
-  - 工具结果
-  - 思考级别变化
-  - 自定义事件
+1. Add the locale to `i18n.ts`:
+   ```typescript
+   export const locales = ['en', 'zh-CN', 'es'] as const;
+   ```
 
-## 开发提示
+2. Create translation file `messages/es.json`
 
-- 日志解析在服务端完成（Node.js Runtime）
-- 前端使用 TypeScript 和 React 18
-- 响应式设计，支持桌面和移动设备
+3. Update middleware matcher in `middleware.ts`
+
+### Translation Files
+
+Translation files are located in the `messages/` directory:
+- `messages/en.json` - English translations
+- `messages/zh-CN.json` - Chinese translations
+
+## Data Visualization
+
+### Home Page
+
+- Overview of all sessions
+- Overall statistics: sessions, events, tokens, cost, tool calls
+- Search and filter functionality
+- Session list with key information for each session
+
+### Session Detail Page
+
+- Session information and statistics
+- Tool call statistics (success/failure counts)
+- Event timeline with filter options
+  - Messages (user/assistant/system)
+  - Tool calls
+  - Tool results
+  - Thinking level changes
+  - Custom events
+
+## Development Tips
+
+- Log parsing is done on the server side (Node.js Runtime)
+- Frontend uses TypeScript and React 19
+- Responsive design supporting desktop and mobile devices
+- Uses `useTranslations` hook from next-intl for all UI text
+
+## Testing
+
+Run tests with:
+
+```bash
+pnpm test
+```
+
+Run tests with coverage:
+
+```bash
+pnpm test:coverage
+```
+
+Run tests in watch mode:
+
+```bash
+pnpm test:watch
+```
+
+## License
+
+MIT
